@@ -1,6 +1,6 @@
 # Smart Poll
 
-A [Maubot](https://github.com/maubot/maubot) plugin for
+A [maubot](https://github.com/maubot/maubot) plugin for
 [Matrix](https://matrix.org/), which enables polls in matrix rooms.
 The polls are *text-based*, so that they can also be used via bridges.
 
@@ -17,7 +17,7 @@ Upload the `smartpoll-v0.0.0.mbc` file via Maubot user interface.
 You could generate your own mbc file via
 [`mbcbuild.sh`](/mbcbuild.sh) script in the
 source code. Alternatively, you could download the plugin from the
-[Tags](./tags).
+[Tags](../../tags).
 
 ## Usage [To Be Updated Accordingly]
 
