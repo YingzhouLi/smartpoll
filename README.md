@@ -7,7 +7,8 @@ The polls are *text-based*, so that they can also be used via bridges.
 This repository originates from a forked repository
 [maubot-poll](https://github.com/YingzhouLi/maubot-poll), which is a
 English translated version of the original
-[maubot-poll](https://github.com/DrDeee/maubot-poll) by @DrDeee.
+[maubot-poll](https://github.com/DrDeee/maubot-poll) by
+[@DrDeee](https://github.com/DrDeee).
 
 
 ## Installation
