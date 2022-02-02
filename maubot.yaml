@@ -1,0 +1,8 @@
+maubot: 0.1.0
+id: com.smartpoll
+version: 0.1.0
+license: BSD 3-Clause
+modules:
+  - polls
+main_class: SmartPoll
+database: true
