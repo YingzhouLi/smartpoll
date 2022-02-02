@@ -15,9 +15,9 @@ English translated version of the original
 
 Upload the `smartpoll-v0.0.0.mbc` file via Maubot user interface.
 You could generate your own mbc file via
-[`mbcbuild.sh`](/blob/main/mbcbuild.sh) script in the
+[`mbcbuild.sh`](/mbcbuild.sh) script in the
 source code. Alternatively, you could download the plugin from the
-[Tags](/tags).
+[Tags](./tags).
 
 ## Usage [To Be Updated Accordingly]
 
