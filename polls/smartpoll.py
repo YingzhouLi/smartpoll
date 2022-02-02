@@ -15,10 +15,10 @@ def _remove_suffix(input_string, suffix):
 
 
 def _generate_poll_html_message(
-        question: str, choices: list, code: str) -> str:
+        question: str, options: list, code: str) -> str:
     message = f"<p><em>{question}</em></p>\n<ol>\n"
-    for choice in choices:
-        message = message + f"<li>{choice}</li>\n"
+    for option in options:
+        message = message + f"<li>{option}</li>\n"
     message = message + f"\n</ol>\n" \
             f"<p><em>Voting command: </em>" \
             f"<code>!vote {code} &lt;Nummer&gt;</code></p>"
@@ -26,30 +26,30 @@ def _generate_poll_html_message(
 
 
 def _generate_poll_text_message(
-        question: str, choices: list, code: str) -> str:
+        question: str, options: list, code: str) -> str:
     message = f"{question}\n\n"
-    for index, choice in enumerate(choices):
-        message = message + f"{index}. {choice}\n"
+    for index, option in enumerate(options):
+        message = message + f"{index}. {option}\n"
     message = message + f"\nVoting command: !vote {code} <Nummer>"
     return message
 
 def _generate_result_html_message(
-        question: str, choices: list, total_votes: int) -> str:
+        question: str, options: list, total_votes: int) -> str:
     message = f"<h4>Poll result: <em>{question}</em></h4><ol>"
-    for choice in choices:
-        message = message + f"<li>{choice.content}" \
-                f"<br><em>{len(choice.votes)} in {total_votes} Votes - " \
-                f"{'{:.0%}'.format(len(choice.votes) / total_votes)}" \
+    for option in options:
+        message = message + f"<li>{option.content}" \
+                f"<br><em>{len(option.votes)} in {total_votes} Votes - " \
+                f"{'{:.0%}'.format(len(option.votes) / total_votes)}" \
                 f"</em></li>"
     return message + "</ol>"
 
 def _generate_result_text_message(
-        question: str, choices: list, total_votes: int) -> str:
+        question: str, options: list, total_votes: int) -> str:
     message = f"Poll result: {question}\n"
-    for choice in choices:
-        message = message + f"{choice.number[0]}. {choice.content}\n"
-                f"({len(choice.votes)} in {total_votes} Votes - " \
-                f"{'{:.0%}'.format(len(choice.votes) / total_votes)})\n"
+    for option in options:
+        message = message + f"{option.number[0]}. {option.content}\n"
+                f"({len(option.votes)} in {total_votes} Votes - " \
+                f"{'{:.0%}'.format(len(option.votes) / total_votes)})\n"
     return message
 
 
@@ -71,25 +71,25 @@ class SmartPoll(Plugin):
             await self.client.redact(evt.room_id, evt.event_id)
         await self.client.redact(evt.room_id, event)
 
-    def _sort_choices(self, poll_id: int):
-        choices = self.db.get_poll_choices(poll_id)
+    def _sort_options(self, poll_id: int):
+        options = self.db.get_poll_options(poll_id)
         votes = self.db.get_votes(poll_id)
 
         total_votes = 0
         data = {}
-        for choice in choices:
-            data[choice.id] = Option(choice.choice_number, choice.content)
+        for option in options:
+            data[option.id] = Option(option.option_idx, option.content)
         for vote in votes:
             total_votes = total_votes + 1
-            data[vote.choice_id].votes.append(vote.voter)
+            data[vote.option_id].votes.append(vote.voter)
 
-        choices = list(data.values())
-        choices.sort(key=lambda c: c.number)
+        options = list(data.values())
+        options.sort(key=lambda c: c.number)
 
-        for choice in choices:
-            choice.votes.sort()
+        for option in options:
+            option.votes.sort()
 
-        return total_votes, choices
+        return total_votes, options
 
     @command.new(name="poll", require_subcommand=True)
     async def poll_command(self, evt: MessageEvent):
@@ -131,16 +131,16 @@ class SmartPoll(Plugin):
     @command.argument(
             name="code", label="Code", pass_raw=False, required=True)
     @command.argument(
-            name="choice", label="Option", pass_raw=False, required=True)
-    async def vote_poll(self, evt: MessageEvent, code: str, choice: str):
+            name="option", label="Option", pass_raw=False, required=True)
+    async def vote_poll(self, evt: MessageEvent, code: str, option: str):
         poll = self.db.get_poll(evt.room_id, code)
         if poll.exists:
-            choices = self.db.get_poll_choices_ids(poll.id)
+            options = self.db.get_poll_options_ids(poll.id)
             try:
-                choice_id = choices[int(choice)]
-                self.db.set_vote(poll.id, choice_id, evt.sender)
+                option_id = options[int(option)]
+                self.db.set_vote(poll.id, option_id, evt.sender)
                 await self._send_temporary_response(
-                        f"{evt.sender}, voted for option {choice}.", evt)
+                        f"{evt.sender}, voted for option {option}.", evt)
             except KeyError:
                 await self._send_temporary_response(
                         "There is no such option.", evt)
@@ -169,15 +169,15 @@ class SmartPoll(Plugin):
                     evt)
             return
 
-        data = self._sort_choices(poll.id)
+        data = self._sort_options(poll.id)
         total_votes = data[0]
-        choices = data[1]
+        options = data[1]
 
         await self.client.send_text(evt.room_id,
                 _generate_result_text_message(poll.question,
-                    choices, total_votes),
+                    options, total_votes),
                 _generate_result_html_message(poll.question,
-                    choices, total_votes))
+                    options, total_votes))
 
     @poll_command.subcommand(
             name="ping", help="Pings the participants of a poll " \
@@ -199,11 +199,11 @@ class SmartPoll(Plugin):
             return
         try:
             opt = int(option)
-            choices = self._sort_choices(poll.id)[1]
-            for choice in choices:
-                if choice.number[0] == opt:
-                    msg = f"**Option {opt}:** *{choice.content}* \n\n"
-                    for vote in choice.votes:
+            options = self._sort_options(poll.id)[1]
+            for option in options:
+                if option.number[0] == opt:
+                    msg = f"**Option {opt}:** *{option.content}* \n\n"
+                    for vote in option.votes:
                         msg = msg + f"{vote}, "
                     await evt.respond(_remove_suffix(msg, ", "))
                     return
