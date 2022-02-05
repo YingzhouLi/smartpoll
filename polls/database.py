@@ -1,29 +1,21 @@
-import random
-import string
-
 from sqlalchemy import Table, MetaData, Column
 from sqlalchemy import Integer, String, Text, DateTime
 from sqlalchemy.engine import Engine
 
 from .types import Poll
 
-
-def _generate_random_string() -> str:
-    return ''.join(random.SystemRandom().choice(string.ascii_uppercase \
-            + string.digits) for _ in range(6))
-
-
 class PollDatabase:
     db: Engine
     polls: Table
-    options: Table
+    choices: Table
     votes: Table
 
-    def __init__(self, db: Engine):
+    def __init__(self, db):
         self.db = db
 
         meta = MetaData()
         meta.bind = db
+
         self.polls = Table("polls", meta,
                          Column("id", Integer, primary_key=True,
                              autoincrement=True),
@@ -34,35 +26,35 @@ class PollDatabase:
                          Column("question", Text, nullable=False),
                          Column("close_time", DateTime, nullable=True))
 
-        self.options = Table("options", meta,
+        self.choices = Table("choices", meta,
                            Column("id", Integer, primary_key=True,
                                autoincrement=True),
                            Column("poll_id", Integer, nullable=False),
-                           Column("option_idx", Integer, nullable=False),
+                           Column("choice_idx", Integer, nullable=False),
                            Column("content", Text, nullable=False))
 
         self.votes = Table("votes", meta,
                          Column("id", Integer, primary_key=True,
                              autoincrement=True),
                          Column("poll_id", Integer, nullable=False),
-                         Column("option_id", Integer, nullable=False),
+                         Column("choice_id", Integer, nullable=False),
                          Column("voter", String(255), nullable=False),
                          Column("time", DateTime, nullable=False))
+
         meta.create_all()
 
-    def create_poll(self,
-            question: str, options: list, creator: str, room_id: str
-            ) -> str:
+    def create_poll(self, question, choices, creator, room_id):
+        now = datetime.now()
         code = _generate_random_string()
         proxy = self.db.execute(
             self.polls.insert().values(code=code, creator=creator,
                 question=question, room_id=room_id)
             )
-        for index, option in enumerate(options):
+        for index, choice in enumerate(choices):
             self.db.execute(
-                self.options.insert().values(
+                self.choices.insert().values(
                     poll_id=proxy.inserted_primary_key[0],
-                    option_idx=index + 1, content=option))
+                    choice_idx=index + 1, content=choice))
         return code
 
     def get_poll(self, room_id: str, code: str):
@@ -74,25 +66,25 @@ class PollDatabase:
             return Poll(None, None, None)
         return Poll(poll.id, poll.question, poll.creator)
 
-    def get_poll_options_ids(self, poll_id: int):
-        proxy = self.db.execute(self.options.select().where(
-            self.options.c.poll_id == poll_id))
-        options = {}
+    def get_poll_choices_ids(self, poll_id: int):
+        proxy = self.db.execute(self.choices.select().where(
+            self.choices.c.poll_id == poll_id))
+        choices = {}
         for row in proxy:
-            options[row.option_idx] = row.id
-        return options
+            choices[row.choice_idx] = row.id
+        return choices
 
-    def get_poll_options(self, poll_id: int):
-        return self.db.execute(self.options.select().where(
-            self.options.c.poll_id == poll_id))
+    def get_poll_choices(self, poll_id: int):
+        return self.db.execute(self.choices.select().where(
+            self.choices.c.poll_id == poll_id))
 
-    def set_vote(self, poll_id: int, option_id: int, user_id: str):
+    def set_vote(self, poll_id: int, choice_id: int, user_id: str):
         self.db.execute(
             self.votes.delete().where(
                 self.votes.c.poll_id == poll_id).where(
                     self.votes.c.voter == user_id))
         self.db.execute(self.votes.insert().values(poll_id=poll_id,
-            option_id=option_id, voter=user_id))
+            choice_id=choice_id, voter=user_id))
 
     def get_votes(self, poll_id: int):
         return self.db.execute(self.votes.select().where(
