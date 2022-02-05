@@ -2,9 +2,11 @@ name: tag-release
 on: workflow_dispatch
   
 jobs:
-  release:
+  build:
+    name: tag-release
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
         uses: actions/checkout@v2
       - name: Zip
         run: |
