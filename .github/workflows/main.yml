@@ -1,6 +1,9 @@
 name: tag-release
-on: workflow_dispatch
-  
+on:
+  push:
+    tags:
+      - 'v*'
+
 jobs:
   build:
     name: tag-release
@@ -29,5 +32,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./smartpoll.mbp
-          asset_name: smartpoll-v0.1.0.mbp
+          asset_name: smartpoll-${{github.ref}}.mbp
           asset_content_type: application/zip
