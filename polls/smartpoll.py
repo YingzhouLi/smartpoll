@@ -50,7 +50,7 @@ class SmartPoll(Plugin):
 
                 if evt.content.relates_to.event_id is not None:
                     event_id = evt.content.relates_to.event_id
-                    for poll in self.current_polls[evt.room_id]:
+                    for idx, poll in enumerate(self.current_polls[evt.room_id]):
                         if event_id == poll.event_id:
                             await evt.client.redact(
                                 evt.room_id, poll.poll_event_id)
@@ -63,6 +63,8 @@ class SmartPoll(Plugin):
                                 await evt.client.react(
                                     evt.room_id, poll.poll_event_id,
                                     EMOJI_LIST[it])
+                            self.current_events[evt.room_id][idx] = \
+                                poll.poll_event_id
                             return
 
                 newpoll = Poll(evt.event_id, evt.room_id, evt.sender,
