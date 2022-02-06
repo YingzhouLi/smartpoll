@@ -21,8 +21,40 @@ source code. Alternatively, you could download the plugin from the
 
 ## Usage [To Be Updated Accordingly]
 
-- `!poll create <question> | <option 1> | <option 2> | <...>` -  Creates a new poll
-- `!vote <code> <option>` - Vote for an option
-- `!poll result <code>` - Shows the result of the poll
-- `!poll ping <code> <option>` - Pings all participants who voted for `option`
+- Create a new poll
 
+  ```
+  !poll create <question> | <option 1> | <option 2> ...
+  ```
+    - Alternatively, 
+      ```
+      !poll create <question>
+      <option 1>
+      <option 2>
+      ...`
+      ```
+      also creates a new poll.
+- Vote for choice(s)
+  
+  There will be emojis :one:, :two:, :three:, etc. attached to the poll
+  from the bot. Users can simply click the emoji to vote for choice(s)
+
+- Show the result of the poll
+
+  ```
+  !poll result <code>
+  ```
+  Only poll creator can show the result.
+
+- Pings all participants who voted for `choice`
+  ```
+  !poll ping <code> <choice>
+  ```
+  Only poll creator can ping the result of the poll.
+
+- Close the result of the poll
+
+  ```
+  !poll close <code>
+  ```
+  Only poll creator can close the poll.
