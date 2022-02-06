@@ -67,3 +67,10 @@ source code. Alternatively, you could download the plugin from the
 - Add private vote functionality so that users can vote in a private room
     with the bot and the creator can only view the poll results and cannot
     ping choice.
+
+## Contributors
+  <a href="https://github.com/YingzhouLi/smartpoll/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=YingzhouLi/smartpoll" />
+  </a>
+
+  Made with [contrib.rocks](https://contrib.rocks).
