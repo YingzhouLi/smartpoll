@@ -24,20 +24,23 @@ class Vote:
     choice_index:  int
     num_vote:      int
     voters:        list
+    voters_disp:   list
     timestamp:     list
 
     def __init__(self, choice_index):
         self.choice_index = choice_index
         self.num_vote     = 0
         self.voters       = []
+        self.voters_disp  = []
         self.timestamp    = []
 
-    def vote(self, voter):
+    def vote(self, voter, voter_disp):
         if voter in self.voters:
             return 0
         else:
             self.num_vote += 1
             self.voters.append(voter)
+            self.voters_disp.append(voter_disp)
             self.timestamp.append(datetime.now())
             return 1
 
@@ -46,6 +49,7 @@ class Vote:
             self.num_vote -= 1
             idx = self.voters.index(voter)
             del self.voters[idx]
+            del self.voters_disp[idx]
             del self.timestamp[idx]
             return 1
         else:
@@ -102,18 +106,18 @@ class Poll:
             self.choices.append(Choice(self, index, content))
             self.votes.append(Vote(index))
 
-    def vote(self, choice_index, voter, vote_event_id):
+    def vote(self, choice_index, voter, voter_disp, vote_event_id):
         if self.mcp:
             if voter in self.voters:
                 raise Exception("Only one choice can be choosen.")
             else:
-                self.votes[choice_index].vote(voter)
+                self.votes[choice_index].vote(voter, voter_disp)
                 self.totalvotes += 1
                 self.event_ids.append(vote_event_id)
                 self.voters.append(voter)
                 self.choice_indices.append(choice_index)
         else:
-            cnt = self.votes[choice_index].vote(voter)
+            cnt = self.votes[choice_index].vote(voter, voter_disp)
             self.totalvotes += cnt
             if cnt == 0:
                 raise Exception("A voter can only vote for a choice once.")
@@ -181,22 +185,23 @@ class Poll:
             message = "<p>Invalid choice index!</p>\n"
             return message
         message = f"<h4>Poll ping: <em>{self.question}</em></h4>\n"
-        message = f"<h5>Voters for choice {choice_index}:</h5>\n<ol>"
-        for voter in self.votes[choice_index-1].voters:
-            message += f"<li>{voter}</li>"
+        message += f"<h5>Voters for choice {choice_index}: "
+        message += f"{self.choices[choice_index-1].content}</h5>\n<ol>"
+        for it in range(len(self.votes[choice_index-1].voters)):
+            voter = self.votes[choice_index-1].voters[it]
+            voterdisp = self.votes[choice_index-1].voters_disp[it]
+            message += f"<li> <a href=\"https://matrix.to/#/{voter}\">"
+            message += f"{voterdisp}</a></li>"
         return message + "</ol>"
 
     def generate_ping_text_message(self, choice_index):
         if choice_index > len(self.choices):
             message = "Invalid choice index!\n"
             return message
-        message = f"<h4>Poll ping: <em>{self.question}</em></h4>\n"
-        for voter in self.votes[choice_index-1].voters:
-            message += f"<li>{voter}</li>"
-        return message + "</ol>"
-        message = f"#### Poll ping: **{self.question}**\n"
-        message = f"##### Voters for choice {choice_index}:\n"
+        message = f"#### Poll ping: **{self.question}**\n\n"
+        message += f"##### Voters for choice {choice_index}: "
+        message += f"{self.choices[choice_index-1].content}\n"
         for it in range(len(self.votes[choice_index-1].voters)):
-            voter = self.voters[choice_index-1].voters[it]
-            message += f"{it+1}. {voter}\n"\
+            voterdisp = self.votes[choice_index-1].voters_disp[it]
+            message += f"{it+1}. {voterdisp}\n"
         return message

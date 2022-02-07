@@ -101,7 +101,7 @@ class SmartPoll(Plugin):
             self.current_polls[evt.room_id][idx].generate_result_text_message(),
             self.current_polls[evt.room_id][idx].generate_result_html_message())
 
-    @poll_command.subcommand(
+    @poll.subcommand(
             name="ping", help="Pings the voters for the choice.")
     @command.argument(
             name="code", label="Code", pass_raw=False, required=True)
@@ -115,6 +115,11 @@ class SmartPoll(Plugin):
             return
         if self.current_polls[evt.room_id][idx].creator != evt.sender.strip():
             await evt.reply("Only the creator can show the result.")
+            return
+        try:
+            choice_index = int(choice)
+        except:
+            await evt.reply("Invalid choice index!")
             return
         await self.client.send_text(evt.room_id,
             self.current_polls[evt.room_id][idx].generate_ping_text_message(
@@ -154,8 +159,10 @@ class SmartPoll(Plugin):
                 return
 
             try:
+                voterdisp = await self.client.get_displayname(evt.sender)
                 self.current_polls[evt.room_id][idx].vote(choice_idx,
-                                                    evt.sender, evt.event_id)
+                                                    evt.sender, voterdisp,
+                                                    evt.event_id)
             except Exception as errmsg:
                 self.log.info(errmsg)
 

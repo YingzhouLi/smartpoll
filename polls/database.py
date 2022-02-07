@@ -2,7 +2,7 @@ from sqlalchemy import Table, MetaData, Column
 from sqlalchemy import Integer, String, Text, DateTime
 from sqlalchemy.engine import Engine
 
-from .types import Poll
+from .classes import Poll
 
 class PollDatabase:
     db: Engine
