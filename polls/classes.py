@@ -175,3 +175,28 @@ class Poll:
                 f" Votes - "\
                 f"{'{:.0%}'.format(self.votes[it].num_vote / max(1,self.totalvotes))}\n"
         return message
+
+    def generate_ping_html_message(self, choice_index):
+        if choice_index > len(self.choices):
+            message = "<p>Invalid choice index!</p>\n"
+            return message
+        message = f"<h4>Poll ping: <em>{self.question}</em></h4>\n"
+        message = f"<h5>Voters for choice {choice_index}:</h5>\n<ol>"
+        for voter in self.votes[choice_index-1].voters:
+            message += f"<li>{voter}</li>"
+        return message + "</ol>"
+
+    def generate_ping_text_message(self, choice_index):
+        if choice_index > len(self.choices):
+            message = "Invalid choice index!\n"
+            return message
+        message = f"<h4>Poll ping: <em>{self.question}</em></h4>\n"
+        for voter in self.votes[choice_index-1].voters:
+            message += f"<li>{voter}</li>"
+        return message + "</ol>"
+        message = f"#### Poll ping: **{self.question}**\n"
+        message = f"##### Voters for choice {choice_index}:\n"
+        for it in range(len(self.votes[choice_index-1].voters)):
+            voter = self.voters[choice_index-1].voters[it]
+            message += f"{it+1}. {voter}\n"\
+        return message

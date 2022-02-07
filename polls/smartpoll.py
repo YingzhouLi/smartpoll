@@ -100,6 +100,27 @@ class SmartPoll(Plugin):
         await self.client.send_text(evt.room_id,
             self.current_polls[evt.room_id][idx].generate_result_text_message(),
             self.current_polls[evt.room_id][idx].generate_result_html_message())
+
+    @poll_command.subcommand(
+            name="ping", help="Pings the voters for the choice.")
+    @command.argument(
+            name="code", label="Code", pass_raw=False, required=True)
+    @command.argument(
+            name="choice", label="Choice", pass_raw=False, required=True)
+    async def poll_ping(self, evt: MessageEvent, code, choice):
+        try:
+            idx = self.current_codes[evt.room_id].index(code)
+        except ValueError:
+            await evt.reply("The poll code does not exist.")
+            return
+        if self.current_polls[evt.room_id][idx].creator != evt.sender.strip():
+            await evt.reply("Only the creator can show the result.")
+            return
+        await self.client.send_text(evt.room_id,
+            self.current_polls[evt.room_id][idx].generate_ping_text_message(
+                choice_index),
+            self.current_polls[evt.room_id][idx].generate_ping_html_message(
+                choice_index))
         
     @poll.subcommand(name="close", aliases=["delete"], 
             help="Close a poll: " \
@@ -150,35 +171,3 @@ class SmartPoll(Plugin):
                 except Exception as errmsg:
                     self.log.info(errmsg)
 
-    #@poll_command.subcommand(
-    #        name="ping", help="Pings the participants of a poll " \
-    #                            "who voted for the specified choice.")
-    #@command.argument(
-    #        name="code", label="Code", pass_raw=False, required=True)
-    #@command.argument(
-    #        name="choice", label="Choice", pass_raw=False, required=True)
-    #async def ping_poll(self, evt: MessageEvent, code: str, choice: str):
-    #    poll = self.db.get_poll(evt.room_id, code)
-    #    if not poll.exists:
-    #        await self._send_temporary_response(
-    #                "This poll does not exist!", evt)
-    #        return
-    #    if poll.creator.strip() != evt.sender.strip():
-    #        await self._send_temporary_response(
-    #                "Only the creator of the poll can ping participants!",
-    #                evt)
-    #        return
-    #    try:
-    #        opt = int(choice)
-    #        choices = self._sort_choices(poll.id)[1]
-    #        for choice in choices:
-    #            if choice.number[0] == opt:
-    #                msg = f"**Choice {opt}:** *{choice.content}* \n\n"
-    #                for vote in choice.votes:
-    #                    msg = msg + f"{vote}, "
-    #                await evt.respond(_remove_suffix(msg, ", "))
-    #                return
-    #        raise ValueError
-    #    except ValueError:
-    #        await self._send_temporary_response(
-    #                "You must specify a valid choice!", evt)
