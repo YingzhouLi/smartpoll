@@ -58,7 +58,6 @@ source code. Alternatively, you could download the plugin from the
 
 ## TODO List
 
-- Add `ping` functionality
 - Add `list` functionality to list active and/or closed polls
 - Connect with database so that a closed poll result is still accessible
 - Enable result/close/ping without `<code>` to show the output related to
