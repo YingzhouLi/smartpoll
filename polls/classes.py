@@ -144,10 +144,16 @@ class Poll:
 
     def generate_poll_html_message(self):
         message = f"<h4><em>{self.question}</em></h4>\n"
-        message += "<ol>\n"
-        for choice in self.choices:
-            message += f"<li>{choice.content}</li>\n"
-        message += "\n</ol>\n"
+        if len(self.choices) > 10:
+            for choice in self.choices:
+                message += chr(choice.index+65) \
+                        + f". {choice.content} </br>\n"
+        else:
+            message += "<ol>\n"
+            for choice in self.choices:
+                message += f"<li>{choice.content}</li>\n"
+            message += "\n</ol>\n"
+
 
         message += "<p><em>Poll code: </em>" \
                 + f"<code>{self.code}</code></p>"
@@ -155,26 +161,46 @@ class Poll:
 
     def generate_poll_text_message(self):
         message = f"#### {self.question}\n"
-        for choice in self.choices:
-            message += f"{choice.index+1}. {choice.content}\n"
+        if len(self.choices) > 10:
+            for choice in self.choices:
+                message += chr(choice.index+65) \
+                        + f". {choice.content}\n"
+        else:
+            for choice in self.choices:
+                message += f"{choice.index+1}. {choice.content}\n"
         message += f"\n Poll code: `{self.code}`\n"
         return message
 
     def generate_result_html_message(self):
-        message = f"<h4>Poll result: <em>{self.question}</em></h4><ol>"
-        for it in range(len(self.choices)):
-            message += f"<li>{self.choices[it].content}<br>"
-            message += f"<em>{self.votes[it].num_vote} in {self.totalvotes}" \
-                f" Votes - "\
-                f"{'{:.0%}'.format(self.votes[it].num_vote / max(1,self.totalvotes))}" \
-                f"</em></li>"
-        return message + "</ol>"
+        message = f"<h4>Poll result: <em>{self.question}</em></h4>"
+        if len(self.choices) > 10:
+            for it in range(len(self.choices)):
+                message += chr(self.choices[it].index+65) \
+                        + f". {self.choices[it].content} </br>\n"
+                message += f"<em>{self.votes[it].num_vote} in {self.totalvotes}" \
+                    f" Votes - "\
+                    f"{'{:.0%}'.format(self.votes[it].num_vote / max(1,self.totalvotes))}" \
+                    f"</em></br>"
+        else:
+            message += "<ol>\n"
+            for it in range(len(self.choices)):
+                message += f"<li>{self.choices[it].content}<br>"
+                message += f"<em>{self.votes[it].num_vote} in {self.totalvotes}" \
+                    f" Votes - "\
+                    f"{'{:.0%}'.format(self.votes[it].num_vote / max(1,self.totalvotes))}" \
+                    f"</em></li>"
+            message += "</ol>"
+        return message
 
     def generate_result_text_message(self):
         message = f"#### Poll result: **{self.question}**\n"
         for it in range(len(self.choices)):
-            message += f"{self.choices[it].index+1}. "\
-                f"{self.choices[it].content}\n"
+            if len(self.choices) > 10:
+                message += "- " + chr(self.choices[it].index+65) \
+                        + f". {self.choices[it].content}\n"
+            else:
+                message += f"{self.choices[it].index+1}. "\
+                    f"{self.choices[it].content}\n"
             message += f"{self.votes[it].num_vote} in {self.totalvotes}" \
                 f" Votes - "\
                 f"{'{:.0%}'.format(self.votes[it].num_vote / max(1,self.totalvotes))}\n"
@@ -185,8 +211,12 @@ class Poll:
             message = "<p>Invalid choice index!</p>\n"
             return message
         message = f"<h4>Poll ping: <em>{self.question}</em></h4>\n"
-        message += f"<h5>Voters for choice {choice_index}: "
-        message += f"{self.choices[choice_index-1].content}</h5>\n<ol>"
+        if len(self.choices) > 10:
+            message += f"<h5>Voters for choice " + chr(choice_index+64) + ": "
+        else:
+            message += f"<h5>Voters for choice {choice_index}: "
+        message += f"{self.choices[choice_index-1].content}</h5>\n"
+        message += "<ol>\n"
         for it in range(len(self.votes[choice_index-1].voters)):
             voter = self.votes[choice_index-1].voters[it]
             voterdisp = self.votes[choice_index-1].voters_disp[it]
@@ -199,7 +229,12 @@ class Poll:
             message = "Invalid choice index!\n"
             return message
         message = f"#### Poll ping: **{self.question}**\n\n"
-        message += f"##### Voters for choice {choice_index}: "
+        if len(self.choices) > 10:
+            message += f"<h5>Voters for choice " + chr(choice_index+64) + ": "
+            message += f"##### Voters for choice " \
+                    + chr(choice_index+64) + ": "
+        else:
+            message += f"##### Voters for choice {choice_index}: "
         message += f"{self.choices[choice_index-1].content}\n"
         for it in range(len(self.votes[choice_index-1].voters)):
             voterdisp = self.votes[choice_index-1].voters_disp[it]

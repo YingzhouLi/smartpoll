@@ -10,8 +10,15 @@ from .classes import Poll
 EMOJI_LIST = ["\u0031\uFE0F\u20E3", "\u0032\uFE0F\u20E3", "\u0033\uFE0F\u20E3",
               "\u0034\uFE0F\u20E3", "\u0035\uFE0F\u20E3", "\u0036\uFE0F\u20E3",
               "\u0037\uFE0F\u20E3", "\u0038\uFE0F\u20E3", "\u0039\uFE0F\u20E3",
-              "\U0001F51F"]
-EMOJI_REGEX = r"^[\u0031-\u0040\U0001F51F]"
+              "\U0001F51F",
+              "\U0001F1E6", "\U0001F1E7", "\U0001F1E8", "\U0001F1E9",
+              "\U0001F1EA", "\U0001F1EB", "\U0001F1EC", "\U0001F1ED",
+              "\U0001F1EE", "\U0001F1EF", "\U0001F1F0", "\U0001F1F1",
+              "\U0001F1F2", "\U0001F1F3", "\U0001F1F4", "\U0001F1F5",
+              "\U0001F1F6", "\U0001F1F7", "\U0001F1F8", "\U0001F1F9",
+              "\U0001F1FA", "\U0001F1FB", "\U0001F1FC", "\U0001F1FD",
+              "\U0001F1FE", "\U0001F1FF"]
+EMOJI_REGEX = r"^[\u0031-\u0040\U0001F51F\U0001F1E6-\U0001F200]"
 
 
 class SmartPoll(Plugin):
@@ -59,10 +66,16 @@ class SmartPoll(Plugin):
                                 evt.room_id,
                                 poll.generate_poll_text_message(),
                                 poll.generate_poll_html_message())
-                            for it in range(len(choices)):
-                                await evt.client.react(
-                                    evt.room_id, poll.poll_event_id,
-                                    EMOJI_LIST[it])
+                            if len(choices) > 10:
+                                for it in range(len(choices)):
+                                    await evt.client.react(
+                                        evt.room_id, poll.poll_event_id,
+                                        EMOJI_LIST[it+10])
+                            else:
+                                for it in range(len(choices)):
+                                    await evt.client.react(
+                                        evt.room_id, poll.poll_event_id,
+                                        EMOJI_LIST[it])
                             self.current_events[evt.room_id][idx] = \
                                 poll.poll_event_id
                             return
@@ -78,9 +91,15 @@ class SmartPoll(Plugin):
                 self.current_events[evt.room_id].append(newpoll.poll_event_id)
                 self.current_codes[evt.room_id].append(newpoll.code)
 
-                for it in range(len(choices)):
-                    await evt.client.react(
-                        evt.room_id, newpoll.poll_event_id, EMOJI_LIST[it])
+                if len(choices) > 10:
+                    for it in range(len(choices)):
+                        await evt.client.react(
+                            evt.room_id, newpoll.poll_event_id,
+                            EMOJI_LIST[it+10])
+                else:
+                    for it in range(len(choices)):
+                        await evt.client.react(
+                            evt.room_id, newpoll.poll_event_id, EMOJI_LIST[it])
         else:
             await evt.reply("Invalid input! Please check `!poll` for help.")
 
@@ -117,7 +136,10 @@ class SmartPoll(Plugin):
             await evt.reply("Only the creator can show the result.")
             return
         try:
-            choice_index = int(choice)
+            if choice >= 'A' and choice <= "Z":
+                choice_index = ord(choice) - 64
+            else:
+                choice_index = int(choice)
         except:
             await evt.reply("Invalid choice index!")
             return
@@ -155,6 +177,8 @@ class SmartPoll(Plugin):
             idx = self.current_events[evt.room_id].index(event_id)
             try:
                 choice_idx = EMOJI_LIST.index(emoji)
+                if len(self.current_polls[evt.room_id][idx].choices) > 10:
+                    choice_idx -= 10
             except ValueError:
                 return
 
